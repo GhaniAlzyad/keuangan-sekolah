@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Laporan Keuangan Sekolah (Lengkap)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container">
+            <span class="navbar-brand mb-0 h1">Laporan Executive Cash Flow Sekolah</span>
+            <a href="javascript:history.back()" class="btn btn-sm btn-outline-light">Kembali ke Dashboard</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Tombol Cetak PDF -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="text-secondary">Ringkasan Arus Kas</h4>
+            <a href="/laporan/pdf" class="btn btn-danger shadow-sm">📄 Cetak Laporan PDF</a>
+        </div>
+        
+        <!-- Dashboard Kartu Kas Executive (Biarkan kode di bawahnya tetap sama) -->
+        <div class="row mb-4">
+        <!-- Dashboard Kartu Kas Executive -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card border-0 bg-primary text-white p-3 shadow-sm">
+                    <small>Total Pemasukan Siswa</small>
+                    <h4>Rp {{ "{:,.0f}".format(masuk_siswa).replace(',', '.') }}</h4>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 bg-info text-white p-3 shadow-sm">
+                    <small>Pemasukan Lain (BOS/Hibah)</small>
+                    <h4>Rp {{ "{:,.0f}".format(masuk_lain).replace(',', '.') }}</h4>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 bg-danger text-white p-3 shadow-sm">
+                    <small>Total Pengeluaran Sekolah</small>
+                    <h4>Rp {{ "{:,.0f}".format(pengeluaran).replace(',', '.') }}</h4>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 bg-success text-white p-3 shadow-sm">
+                    <small>Sisa Saldo Kas Sekolah</small>
+                    <h4>Rp {{ "{:,.0f}".format(saldo).replace(',', '.') }}</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Tabel Pengeluaran -->
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-danger text-white fw-bold">Rincian Pengeluaran Sekolah</div>
+                    <div class="card-body p-0">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr><th>Kategori</th><th>Keterangan</th><th class="text-end">Nominal</th></tr>
+                            </thead>
+                            <tbody>
+                                {% for k in rincian_keluar %}
+                                <tr>
+                                    <td><strong>{{ k.kategori }}</strong></td>
+                                    <td>{{ k.keterangan }}</td>
+                                    <td class="text-end text-danger">Rp {{ "{:,.0f}".format(k.nominal).replace(',', '.') }}</td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="3" class="text-center text-muted">Belum ada data pengeluaran.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabel Pemasukan Non-Siswa -->
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-info text-white fw-bold">Rincian Pemasukan Non-Siswa</div>
+                    <div class="card-body p-0">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr><th>Sumber</th><th>Keterangan</th><th class="text-end">Nominal</th></tr>
+                            </thead>
+                            <tbody>
+                                {% for m in rincian_masuk %}
+                                <tr>
+                                    <td><strong>{{ m.sumber }}</strong></td>
+                                    <td>{{ m.keterangan }}</td>
+                                    <td class="text-end text-info">Rp {{ "{:,.0f}".format(m.nominal).replace(',', '.') }}</td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="3" class="text-center text-muted">Belum ada data pemasukan lain.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
