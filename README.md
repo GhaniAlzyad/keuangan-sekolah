@@ -49,7 +49,7 @@ Sistem berbasis web untuk mengelola administrasi keuangan sekolah. Aplikasi ini 
    ```Bash
    python app.py
    
-   Aplikasi akan berjalan di http://127.0.0.1:5000/
+Aplikasi akan berjalan di http://127.0.0.1:5000/
 
 
 👥 Hak Akses (Role)
