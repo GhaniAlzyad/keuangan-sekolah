@@ -48,13 +48,92 @@ def login():
 # --- RUTE DASHBOARD (Menerima GET & POST) ---
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
-    # Jika belum login, kembalikan ke halaman login '/'
     if not session.get('role'):
         return redirect('/')
         
+    role = session.get('role')
+    username = session.get('username')
+    
+    # Nilai default Kepsek/Bendahara
+    total_tagihan = 0
+    saldo_kas = 0
+    total_transaksi = 0
+    
+    # Nilai default Staff TU
+    total_siswa = 0
+    total_tagihan_assign = 0
+    total_menunggu_validasi = 0
+
+    # Nilai default Walimurid
+    wm_belum_lunas = 0
+    wm_menunggu = 0
+    wm_lunas = 0
+    nama_siswa_wm = ""
+
+    db = get_db()
+
+    if role == 'kepsek':
+        hasil_tagihan = db.execute("SELECT COUNT(*) as total FROM master_tagihan").fetchone()
+        total_tagihan = hasil_tagihan['total'] if hasil_tagihan['total'] else 0
+        
+        masuk_siswa = db.execute("SELECT SUM(m.nominal) as total FROM transaksi t JOIN master_tagihan m ON t.master_tagihan_id = m.id WHERE t.status = 'Lunas'").fetchone()['total'] or 0
+        masuk_lain = db.execute("SELECT SUM(nominal) as total FROM kas_masuk").fetchone()['total'] or 0
+        pengeluaran = db.execute("SELECT SUM(nominal) as total FROM kas_keluar").fetchone()['total'] or 0
+        saldo_kas = (masuk_siswa + masuk_lain) - pengeluaran
+        
+        jml_trx_siswa = db.execute("SELECT COUNT(*) as total FROM transaksi WHERE status = 'Lunas'").fetchone()['total'] or 0
+        jml_kas_masuk = db.execute("SELECT COUNT(*) as total FROM kas_masuk").fetchone()['total'] or 0
+        jml_kas_keluar = db.execute("SELECT COUNT(*) as total FROM kas_keluar").fetchone()['total'] or 0
+        total_transaksi = jml_trx_siswa + jml_kas_masuk + jml_kas_keluar
+
+    elif role == 'tu':
+        hasil_siswa = db.execute("SELECT COUNT(*) as total FROM siswa").fetchone()
+        total_siswa = hasil_siswa['total'] if hasil_siswa['total'] else 0
+        
+        hasil_assign = db.execute("SELECT COUNT(*) as total FROM transaksi").fetchone()
+        total_tagihan_assign = hasil_assign['total'] if hasil_assign['total'] else 0
+        
+        hasil_validasi = db.execute("SELECT COUNT(*) as total FROM transaksi WHERE status = 'Menunggu Validasi'").fetchone()
+        total_menunggu_validasi = hasil_validasi['total'] if hasil_validasi['total'] else 0
+
+    elif role == 'walimurid':
+        siswa = db.execute("SELECT id, nama FROM siswa WHERE nisn = ?", (username,)).fetchone()
+        if siswa:
+            nama_siswa_wm = siswa['nama']
+            s_id = siswa['id']
+            
+            # 1. Total Nominal Tagihan Pending (Belum Lunas)
+            wm_belum_lunas = db.execute('''
+                SELECT SUM(m.nominal) as total FROM transaksi t 
+                JOIN master_tagihan m ON t.master_tagihan_id = m.id 
+                WHERE t.siswa_id = ? AND t.status = 'Pending'
+            ''', (s_id,)).fetchone()['total'] or 0
+
+            # 2. Jumlah Tagihan Menunggu Validasi
+            wm_menunggu = db.execute('''
+                SELECT COUNT(*) as total FROM transaksi 
+                WHERE siswa_id = ? AND status = 'Menunggu Validasi'
+            ''', (s_id,)).fetchone()['total'] or 0
+
+            # 3. Jumlah Tagihan Sudah Lunas
+            wm_lunas = db.execute('''
+                SELECT COUNT(*) as total FROM transaksi 
+                WHERE siswa_id = ? AND status = 'Lunas'
+            ''', (s_id,)).fetchone()['total'] or 0
+
     return render_template('dashboard.html', 
-                           role=session.get('role'), 
-                           username=session.get('username'))
+                           role=role, 
+                           username=username,
+                           total_tagihan=total_tagihan,
+                           saldo_kas=saldo_kas,
+                           total_transaksi=total_transaksi,
+                           total_siswa=total_siswa,
+                           total_tagihan_assign=total_tagihan_assign,
+                           total_menunggu_validasi=total_menunggu_validasi,
+                           wm_belum_lunas=wm_belum_lunas,
+                           wm_menunggu=wm_menunggu,
+                           wm_lunas=wm_lunas,
+                           nama_siswa_wm=nama_siswa_wm)
 
 @app.route('/logout')
 def logout():
