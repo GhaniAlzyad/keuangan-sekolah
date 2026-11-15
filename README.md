@@ -50,14 +50,14 @@ keuangan-arroja/
    ```bash
    git clone [https://github.com/username-anda/nama-repo-anda.git](https://github.com/username-anda/nama-repo-anda.git)
    cd nama-repo-anda
-```
+   ```
 2. **Buat Virtual Environment** (Opsional namun disarankan)
 
    ```Bash
    python -m venv venv
    source venv/bin/activate  # Untuk Linux/Mac
    venv\Scripts\activate     # Untuk Windows
-```
+   ```
 3. **Install Dependencies**
    Pastikan Anda menginstal Flask dan FPDF.
 
