@@ -100,4 +100,4 @@ Catatan untuk Akun Wali Murid: Akun wali murid dibuat secara otomatis saat Staff
 4. Lanjutkan tarik kode tersebut di **Bash Console PythonAnywhere** dan ikuti langkah konfigurasi WSGI yang sudah dibahas sebelumnya.
 
 ## 💻Pengembang
-Sistem ini dikembangkan Oleh Ghani Al-Zyad Mahasiswa Prodi Sistem Informasi Fakultas Ilmu Komputer Institut Teknologi Garut
+Sistem ini dikembangkan Oleh Ghani Al-Zyad Mahasiswa Prodi Sistem Informasi Fakultas Ilmu Komputer Institut Teknologi Garut untuk Yayasan Pendidikan Islam ARROJA
