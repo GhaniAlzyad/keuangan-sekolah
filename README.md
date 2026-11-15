@@ -43,21 +43,21 @@ keuangan-arroja/
     ├── tu_validasi.html
     ├── walimurid_tagihan.html
     └── laporan.html
-
+```
 ## 🚀 Cara Instalasi dan Penggunaan
 
 1. **Clone Repositori**
    ```bash
    git clone [https://github.com/username-anda/nama-repo-anda.git](https://github.com/username-anda/nama-repo-anda.git)
    cd nama-repo-anda
-
+```
 2. **Buat Virtual Environment** (Opsional namun disarankan)
 
    ```Bash
    python -m venv venv
    source venv/bin/activate  # Untuk Linux/Mac
    venv\Scripts\activate     # Untuk Windows
-
+```
 3. **Install Dependencies**
    Pastikan Anda menginstal Flask dan FPDF.
 
@@ -66,7 +66,7 @@ keuangan-arroja/
 
 4. **Inisialisasi Database**
    Jalankan skrip inisialisasi untuk membuat file database.db beserta struktur tabelnya.
-
+```
    ```Bash
    python init_db.py
 
@@ -74,7 +74,7 @@ keuangan-arroja/
 
    ```Bash
    python app.py
-   
+```  
 Aplikasi akan berjalan di http://127.0.0.1:5000/
 
 
