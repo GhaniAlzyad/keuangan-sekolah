@@ -1,70 +1,96 @@
 import sqlite3
+from werkzeug.security import generate_password_hash
 
-def init_db():
-    conn = sqlite3.connect('database.db')
-    c = conn.cursor()
+conn = sqlite3.connect('database.db')
+cursor = conn.cursor()
 
-    # Tabel Users (NUPTK 16 digit, Peg.ID 14 digit, atau NISN 10 digit)
-    c.execute('''CREATE TABLE IF NOT EXISTS users (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    username TEXT UNIQUE NOT NULL,
-                    password TEXT NOT NULL,
-                    role TEXT NOT NULL
-                )''')
+# Reset bersih tabel
+cursor.executescript('''
+    DROP TABLE IF EXISTS users;
+    DROP TABLE IF EXISTS siswa;
+    DROP TABLE IF EXISTS master_tagihan;
+    DROP TABLE IF EXISTS transaksi;
+    DROP TABLE IF EXISTS kas_masuk;
+    DROP TABLE IF EXISTS kas_keluar;
+''')
 
-    # Tabel Siswa (Tanpa kolom kelas)
-    c.execute('''CREATE TABLE IF NOT EXISTS siswa (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    nisn TEXT UNIQUE NOT NULL,
-                    nama TEXT NOT NULL
-                )''')
+# 1. Tabel Users (username = NUPTK/Peg.ID untuk internal, NISN untuk walimurid)
+cursor.execute('''
+    CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        nama TEXT NOT NULL,
+        password TEXT NOT NULL,
+        role TEXT NOT NULL
+    )
+''')
 
-    # Tabel Master Tagihan (Tanpa SPP bulanan, berfokus pada tagihan global/cicilan)
-    c.execute('''CREATE TABLE IF NOT EXISTS master_tagihan (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    nama_tagihan TEXT NOT NULL,
-                    kategori TEXT NOT NULL,
-                    nominal REAL NOT NULL
-                )''')
+# 2. Tabel Siswa
+cursor.execute('''
+    CREATE TABLE siswa (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nisn TEXT UNIQUE NOT NULL,
+        nama TEXT NOT NULL
+    )
+''')
 
-    # Tabel Transaksi Tagihan Siswa (Ditambahkan metode_bayar)
-    c.execute('''CREATE TABLE IF NOT EXISTS transaksi (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    siswa_id INTEGER,
-                    master_tagihan_id INTEGER,
-                    status TEXT DEFAULT 'Pending',
-                    metode_bayar TEXT,
-                    FOREIGN KEY(siswa_id) REFERENCES siswa(id),
-                    FOREIGN KEY(master_tagihan_id) REFERENCES master_tagihan(id)
-                )''')
+# 3. Tabel Master Tagihan (Soft Delete is_active)
+cursor.execute('''
+    CREATE TABLE master_tagihan (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nama_tagihan TEXT NOT NULL,
+        nominal INTEGER NOT NULL,
+        kategori TEXT NOT NULL,
+        is_active INTEGER DEFAULT 1
+    )
+''')
 
-    # Tabel Kas Masuk & Keluar
-    c.execute('''CREATE TABLE IF NOT EXISTS kas_masuk (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    tanggal TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    sumber TEXT NOT NULL,
-                    keterangan TEXT,
-                    nominal REAL NOT NULL
-                )''')
+# 4. Tabel Transaksi
+cursor.execute('''
+    CREATE TABLE transaksi (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        siswa_id INTEGER NOT NULL,
+        master_tagihan_id INTEGER NOT NULL,
+        status TEXT DEFAULT 'Pending',
+        metode_bayar TEXT,
+        bukti_bayar TEXT,
+        tanggal_bayar DATETIME,
+        tanggal_validasi DATETIME,
+        FOREIGN KEY (siswa_id) REFERENCES siswa (id),
+        FOREIGN KEY (master_tagihan_id) REFERENCES master_tagihan (id)
+    )
+''')
 
-    c.execute('''CREATE TABLE IF NOT EXISTS kas_keluar (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    tanggal TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    kategori TEXT NOT NULL,
-                    keterangan TEXT,
-                    nominal REAL NOT NULL
-                )''')
+# 5. Tabel Kas Masuk & Keluar
+cursor.execute('''
+    CREATE TABLE kas_masuk (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sumber TEXT NOT NULL,
+        nominal INTEGER NOT NULL,
+        keterangan TEXT,
+        tanggal DATETIME DEFAULT (datetime('now', 'localtime'))
+    )
+''')
 
-    # Akun Default Internal
-    users = [
-        ('1234567890123456', 'password123', 'kepsek'), # NUPTK Kepsek/Bendahara (16 Digit)
-        ('12345678901234', 'password123', 'tu')        # Peg.ID Staff TU (14 Digit)
-    ]
-    c.executemany("INSERT OR IGNORE INTO users (username, password, role) VALUES (?, ?, ?)", users)
+cursor.execute('''
+    CREATE TABLE kas_keluar (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        kategori TEXT NOT NULL,
+        nominal INTEGER NOT NULL,
+        keterangan TEXT,
+        tanggal DATETIME DEFAULT (datetime('now', 'localtime'))
+    )
+''')
 
-    conn.commit()
-    conn.close()
-    print("Database berhasil diinisialisasi dengan struktur baru!")
+# Seed Akun Internal Default (Login menggunakan NUPTK/Peg.ID, password: password123)
+default_pw = generate_password_hash('password123')
+akun_internal = [
+    ('123456789012345678', 'Dwi Sofia Muharyani, M.Pd', default_pw, 'kepsek'),
+    ('123456789123456789', '-', default_pw, 'bendahara'),
+    ('012345678901234567', 'Rika Nuraini, S.A.P', default_pw, 'tu')
+]
+cursor.executemany("INSERT INTO users (username, nama, password, role) VALUES (?, ?, ?, ?)", akun_internal)
 
-if __name__ == '__main__':
-    init_db()
+conn.commit()
+conn.close()
+print("Database berhasil diperbarui! Akun internal menggunakan NUPTK/Peg.ID dengan password: password123")

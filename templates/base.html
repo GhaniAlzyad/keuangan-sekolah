@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Sistem Keuangan Sekolah{% endblock %}</title>
+    <title>{% block title %}Keuangan ARROJA{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
@@ -21,35 +21,53 @@
     <!-- Navbar Asli Anda -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="#">Keuangan Sekolah</a>
-            <div class="d-flex text-white align-items-center">
-                <span class="me-3">Halo, {{ username }} ({{ role }})</span>
-                <a href="/logout" class="btn btn-sm btn-danger">Logout</a>
+            <a class="navbar-brand fw-bold" href="#">Keuangan ARROJA</a>
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-white small">
+                    Halo, <strong>{{ session.nama }}</strong> <span class="badge bg-light text-primary text-uppercase ms-1">{{ session.role }}</span>
+                </span>
+                <a href="/logout" class="btn btn-sm btn-danger fw-semibold">Logout</a>
             </div>
         </div>
     </nav>
 
     <!-- Tab Navigasi Persisten (Hanya Tampil untuk Kepsek & Bendahara) -->
-    {% if role == 'kepsek' or role == 'bendahara' %}
+    <!-- Tab Navigasi Persisten untuk Semua Role -->
     <div class="app-tabs-container mb-4">
         <div class="container">
             <div class="app-tabs">
-                <a href="/dashboard" class="{% if request.path == '/dashboard' %}active{% endif %}">
-                    <i class="bi bi-house-door"></i> Dashboard
+                <a class="navbar-brand fw-bold" href="/dashboard">
+                    <i class="bi bi-bank2 me-1"></i> Keuangan ARROJA
                 </a>
-                <a href="/bendahara/tagihan" class="{% if request.path == '/bendahara/tagihan' %}active{% endif %}">
-                    <i class="bi bi-tags"></i> Master Tagihan
-                </a>
-                <a href="/bendahara/kas" class="{% if request.path == '/bendahara/kas' %}active{% endif %}">
-                    <i class="bi bi-wallet2"></i> Kas / Pengeluaran
-                </a>
-                <a href="/laporan" class="{% if request.path == '/laporan' %}active{% endif %}">
-                    <i class="bi bi-bar-chart-line"></i> Laporan
-                </a>
+
+                {% if role == 'kepsek' or role == 'bendahara' %}
+                    <a href="/bendahara/tagihan" class="{% if request.path == '/bendahara/tagihan' %}active{% endif %}">
+                        <i class="bi bi-tags"></i> Master Tagihan
+                    </a>
+                    <a href="/bendahara/kas" class="{% if request.path == '/bendahara/kas' %}active{% endif %}">
+                        <i class="bi bi-wallet2"></i> Kas / Pengeluaran
+                    </a>
+                    <a href="/laporan" class="{% if request.path == '/laporan' %}active{% endif %}">
+                        <i class="bi bi-bar-chart-line"></i> Laporan
+                    </a>
+                {% elif role == 'tu' %}
+                    <a href="/tu/siswa" class="{% if request.path == '/tu/siswa' %}active{% endif %}">
+                        <i class="bi bi-people"></i> Kelola Siswa
+                    </a>
+                    <a href="/tu/assign_tagihan" class="{% if request.path == '/tu/assign_tagihan' %}active{% endif %}">
+                        <i class="bi bi-receipt"></i> Distribusi Tagihan
+                    </a>
+                    <a href="/tu/validasi" class="{% if request.path == '/tu/validasi' %}active{% endif %}">
+                        <i class="bi bi-check2-circle"></i> Validasi Pembayaran
+                    </a>
+                {% elif role == 'walimurid' %}
+                    <a href="/walimurid/tagihan/{{ username }}" class="{% if '/walimurid/tagihan' in request.path %}active{% endif %}">
+                        <i class="bi bi-card-list"></i> Rincian Tagihan Saya
+                    </a>
+                {% endif %}
             </div>
         </div>
     </div>
-    {% endif %}
 
     <!-- Area Konten yang Akan Berubah -->
     <div class="container {% if role not in ['kepsek', 'bendahara'] %}mt-4{% endif %}">
