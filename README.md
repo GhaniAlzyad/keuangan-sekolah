@@ -63,18 +63,18 @@ keuangan-arroja/
 
    ```Bash
    pip install flask fpdf
+   ```
 
 4. **Inisialisasi Database**
    Jalankan skrip inisialisasi untuk membuat file database.db beserta struktur tabelnya.
-```
    ```Bash
    python init_db.py
-
+   ```
 5. **Jalankan Aplikasi**
 
    ```Bash
    python app.py
-```  
+   ```  
 Aplikasi akan berjalan di http://127.0.0.1:5000/
 
 
