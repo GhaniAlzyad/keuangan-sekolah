@@ -4,7 +4,6 @@ from werkzeug.security import generate_password_hash
 conn = sqlite3.connect('database.db')
 cursor = conn.cursor()
 
-# Reset bersih tabel
 cursor.executescript('''
     DROP TABLE IF EXISTS users;
     DROP TABLE IF EXISTS siswa;
@@ -14,7 +13,7 @@ cursor.executescript('''
     DROP TABLE IF EXISTS kas_keluar;
 ''')
 
-# 1. Tabel Users (username = NUPTK/Peg.ID untuk internal, NISN untuk walimurid)
+# 1. Tabel Users
 cursor.execute('''
     CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,27 +24,30 @@ cursor.execute('''
     )
 ''')
 
-# 2. Tabel Siswa
+# 2. Tabel Siswa (Dilengkapi Jenjang MTs / MA & Kelas)
 cursor.execute('''
     CREATE TABLE siswa (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nisn TEXT UNIQUE NOT NULL,
-        nama TEXT NOT NULL
+        nama TEXT NOT NULL,
+        jenjang TEXT NOT NULL DEFAULT 'MTs',
+        kelas TEXT DEFAULT '-'
     )
 ''')
 
-# 3. Tabel Master Tagihan (Soft Delete is_active)
+# 3. Tabel Master Tagihan (Titipan Siswa per Jenjang)
 cursor.execute('''
     CREATE TABLE master_tagihan (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nama_tagihan TEXT NOT NULL,
         nominal INTEGER NOT NULL,
         kategori TEXT NOT NULL,
+        jenjang TEXT NOT NULL DEFAULT 'MTs',
         is_active INTEGER DEFAULT 1
     )
 ''')
 
-# 4. Tabel Transaksi
+# 4. Tabel Transaksi (Titipan Siswa MTs & MA via Rekening Induk Yayasan)
 cursor.execute('''
     CREATE TABLE transaksi (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -53,7 +55,6 @@ cursor.execute('''
         master_tagihan_id INTEGER NOT NULL,
         status TEXT DEFAULT 'Pending',
         metode_bayar TEXT,
-        bukti_bayar TEXT,
         tanggal_bayar DATETIME,
         tanggal_validasi DATETIME,
         FOREIGN KEY (siswa_id) REFERENCES siswa (id),
@@ -61,10 +62,11 @@ cursor.execute('''
     )
 ''')
 
-# 5. Tabel Kas Masuk & Keluar
+# 5. Tabel Kas Masuk (Dana BOS MTs, Dana BOS MA, Donasi/Subsidi Yayasan)
 cursor.execute('''
     CREATE TABLE kas_masuk (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        unit TEXT NOT NULL,
         sumber TEXT NOT NULL,
         nominal INTEGER NOT NULL,
         keterangan TEXT,
@@ -72,25 +74,30 @@ cursor.execute('''
     )
 ''')
 
+# 6. Tabel Kas Keluar (Operasional BOS, Kebutuhan Siswa, & Beban Bersama 60:40)
 cursor.execute('''
     CREATE TABLE kas_keluar (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        unit TEXT NOT NULL,
+        jenis_belanja TEXT NOT NULL,
         kategori TEXT NOT NULL,
         nominal INTEGER NOT NULL,
+        persen_mts INTEGER DEFAULT 0,
+        persen_ma INTEGER DEFAULT 0,
         keterangan TEXT,
         tanggal DATETIME DEFAULT (datetime('now', 'localtime'))
     )
 ''')
 
-# Seed Akun Internal Default (Login menggunakan NUPTK/Peg.ID, password: password123)
+# Seed Akun Internal Default (Password: password123)
 default_pw = generate_password_hash('password123')
 akun_internal = [
-    ('123456789012345678', 'Dwi Sofia Muharyani, M.Pd', default_pw, 'kepsek'),
-    ('123456789123456789', '-', default_pw, 'bendahara'),
-    ('012345678901234567', 'Rika Nuraini, S.A.P', default_pw, 'tu')
+    ('198001012005011001', 'Ibu Dwi Sofia Muharyani, M.Pd', default_pw, 'kepsek'),
+    ('198505122010012002', '-', default_pw, 'bendahara'),
+    ('199208172019031003', 'Sdr. Rika Nuraini, S.A.P', default_pw, 'tu')
 ]
 cursor.executemany("INSERT INTO users (username, nama, password, role) VALUES (?, ?, ?, ?)", akun_internal)
 
 conn.commit()
 conn.close()
-print("Database berhasil diperbarui! Akun internal menggunakan NUPTK/Peg.ID dengan password: password123")
+print("Database Keuangan ARROJA (Skema Arus Kas MTs, MA & Yayasan) berhasil dibuat!")

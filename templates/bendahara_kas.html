@@ -1,52 +1,114 @@
 {% extends 'base.html' %}
 
-{% block title %}Kelola Kas & Pengeluaran - Keuangan Sekolah{% endblock %}
+{% block title %}Kelola Arus Kas Unit - Keuangan ARROJA{% endblock %}
 
 {% block content %}
 <div class="row">
-    <!-- Form Input Transaksi Kas -->
+    <!-- FORM INPUT ARUS KAS HULU & BELANJA -->
     <div class="col-md-4 mb-4">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-primary text-white fw-bold">Catat Arus Kas Non-Siswa</div>
+        <!-- Form Pemasukan Hulu -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-success text-white fw-bold">1. Catat Pemasukan Hulu (BOS / Subsidi)</div>
             <div class="card-body">
                 <form action="/bendahara/kas" method="POST">
-                    <div class="mb-3">
-                        <label class="form-label text-secondary">Jenis Transaksi</label>
-                        <select name="jenis" class="form-select" required>
-                            <option value="masuk">Pemasukan (Dana BOS / Hibah / dll)</option>
-                            <option value="keluar">Pengeluaran Operasional</option>
+                    <input type="hidden" name="jenis" value="masuk">
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold">Kantong Kas Tujuan</label>
+                        <select name="unit" class="form-select form-select-sm" required>
+                            <option value="MTs">Kas Unit MTs (Rek. BOS MTs)</option>
+                            <option value="MA">Kas Unit MA (Rek. BOS MA)</option>
+                            <option value="Yayasan">Kas Yayasan / Shared Cost (Rek. Induk)</option>
                         </select>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label text-secondary">Kategori / Sumber</label>
-                        <input type="text" name="kategori_sumber" class="form-control" placeholder="Contoh: Dana BOS / Listrik / Alat Tulis" required>
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold">Sumber Pemasukan</label>
+                        <select name="sumber_masuk" class="form-select form-select-sm" required>
+                            <option value="Dana BOS MTs">Dana BOS MTs</option>
+                            <option value="Dana BOS MA">Dana BOS MA</option>
+                            <option value="Donasi / Subsidi Yayasan">Donasi / Subsidi Yayasan</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold">Nominal (Rp)</label>
+                        <input type="number" name="nominal" class="form-control form-control-sm" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label text-secondary">Nominal (Rp)</label>
-                        <input type="number" name="nominal" class="form-control" required>
+                        <label class="form-label small fw-semibold">Keterangan</label>
+                        <input type="text" name="keterangan" class="form-control form-control-sm" placeholder="Contoh: Pencairan BOS Tahap 1">
                     </div>
+                    <button type="submit" class="btn btn-sm btn-success w-100">Simpan Pemasukan</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Form Eksekusi Pengeluaran -->
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-danger text-white fw-bold">2. Catat Eksekusi Pengeluaran (Belanja)</div>
+            <div class="card-body">
+                <form action="/bendahara/kas" method="POST">
+                    <input type="hidden" name="jenis" value="keluar">
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold">Sumber Kantong Kas</label>
+                        <select name="unit" id="unitKeluar" class="form-select form-select-sm" onchange="aturFormBelanja()" required>
+                            <option value="MTs">Kas Unit MTs</option>
+                            <option value="MA">Kas Unit MA</option>
+                            <option value="Yayasan">Kas Yayasan (Beban Bersama / Shared Cost)</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold">Jenis Alokasi Belanja</label>
+                        <select name="jenis_belanja" id="jenisBelanja" class="form-select form-select-sm" required>
+                            <option value="Operasional BOS">1. Operasional BOS (Honor Guru, ATK, Perawatan)</option>
+                            <option value="Kebutuhan Siswa">2. Kebutuhan Siswa (Belanja Seragam, Ujian)</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold">Pos / Item Pengeluaran</label>
+                        <input type="text" name="kategori_keluar" class="form-control form-control-sm" placeholder="Contoh: Honor Guru / Seragam / Listrik" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold">Nominal (Rp)</label>
+                        <input type="number" name="nominal" class="form-control form-control-sm" required>
+                    </div>
+
+                    <!-- Box Rasio Shared Cost (Hanya muncul jika pilih Kas Yayasan) -->
+                    <div id="boxRasioShared" class="p-2 bg-light border rounded mb-2" style="display:none;">
+                        <div class="small fw-bold text-primary mb-1">Pembagian Beban Bersama (%)</div>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="small">Porsi MTs (%)</label>
+                                <input type="number" name="persen_mts" class="form-control form-control-sm" value="60" min="0" max="100">
+                            </div>
+                            <div class="col-6">
+                                <label class="small">Porsi MA (%)</label>
+                                <input type="number" name="persen_ma" class="form-control form-control-sm" value="40" min="0" max="100">
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="mb-3">
-                        <label class="form-label text-secondary">Keterangan / Rincian</label>
-                        <textarea name="keterangan" class="form-control" rows="2" placeholder="Catatan opsional..."></textarea>
+                        <label class="form-label small fw-semibold">Keterangan Rincian</label>
+                        <input type="text" name="keterangan" class="form-control form-control-sm" placeholder="Catatan opsional...">
                     </div>
-                    <button type="submit" class="btn btn-success w-100">Simpan Transaksi</button>
+                    <button type="submit" class="btn btn-sm btn-danger w-100">Simpan Pengeluaran</button>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Tabel Rekapitulasi Kas Masuk & Keluar -->
+    <!-- TABEL REKAPITULASI -->
     <div class="col-md-8">
-        <!-- Tabel Pemasukan Non-Siswa -->
+        <!-- Tabel Pemasukan Hulu -->
         <div class="card shadow-sm border-0 mb-4">
-            <div class="card-header bg-success text-white fw-bold">Pemasukan Non-Siswa (BOS / Hibah / dll)</div>
+            <div class="card-header bg-white fw-bold text-success">Riwayat Pemasukan Hulu (BOS & Subsidi Yayasan)</div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
+                    <table class="table table-hover align-middle mb-0 small">
                         <thead class="table-light">
                             <tr>
                                 <th>Tanggal</th>
-                                <th>Sumber</th>
+                                <th>Unit</th>
+                                <th>Sumber Dana</th>
                                 <th>Keterangan</th>
                                 <th class="text-end">Nominal</th>
                                 <th class="text-center">Aksi</th>
@@ -55,50 +117,19 @@
                         <tbody>
                             {% for m in masuk %}
                             <tr>
-                                <td><small>{{ m.tanggal }}</small></td>
+                                <td>{{ m.tanggal[:10] }}</td>
+                                <td><span class="badge bg-dark">{{ m.unit }}</span></td>
                                 <td><strong>{{ m.sumber }}</strong></td>
-                                <td>{{ m.keterangan }}</td>
+                                <td>{{ m.keterangan or '-' }}</td>
                                 <td class="text-end text-success fw-bold">Rp {{ "{:,.0f}".format(m.nominal).replace(',', '.') }}</td>
                                 <td class="text-center">
-                                    <!-- Tombol Edit Pemasukan -->
-                                    <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#editMasukModal{{ m.id }}">Edit</button>
-                                    
-                                    <!-- Tombol Hapus Pemasukan (POST) -->
                                     <form action="/hapus/kas_masuk/{{ m.id }}" method="POST" style="display:inline;">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Yakin ingin menghapus data pemasukan ini?')">Hapus</button>
+                                        <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" onclick="return confirm('Hapus pemasukan ini?')">Hapus</button>
                                     </form>
                                 </td>
                             </tr>
-
-                            <!-- Modal Edit Pemasukan -->
-                            <div class="modal fade" id="editMasukModal{{ m.id }}" tabindex="-1" aria-labelledby="editMasukModalLabel{{ m.id }}" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header bg-warning">
-                                            <h5 class="modal-title fw-bold" id="editMasukModalLabel{{ m.id }}">Edit Pemasukan</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <form action="/edit/kas_masuk/{{ m.id }}" method="POST">
-                                            <div class="modal-body">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Sumber Dana</label>
-                                                    <input type="text" name="sumber" class="form-control" value="{{ m.sumber }}" required>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Nominal (Rp)</label>
-                                                    <input type="number" name="nominal" class="form-control" value="{{ m.nominal }}" required>
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                                <button type="submit" class="btn btn-success">Simpan Perubahan</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
                             {% else %}
-                            <tr><td colspan="5" class="text-center text-muted py-3">Belum ada pemasukan non-siswa.</td></tr>
+                            <tr><td colspan="6" class="text-center text-muted py-3">Belum ada pemasukan hulu dicatat.</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -106,17 +137,18 @@
             </div>
         </div>
 
-        <!-- Tabel Pengeluaran -->
+        <!-- Tabel Pengeluaran Unit & Shared Cost -->
         <div class="card shadow-sm border-0">
-            <div class="card-header bg-danger text-white fw-bold">Pengeluaran Operasional Sekolah</div>
+            <div class="card-header bg-white fw-bold text-danger">Riwayat Eksekusi Pengeluaran (Unit & Beban Bersama)</div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
+                    <table class="table table-hover align-middle mb-0 small">
                         <thead class="table-light">
                             <tr>
                                 <th>Tanggal</th>
-                                <th>Kategori</th>
-                                <th>Keterangan</th>
+                                <th>Unit</th>
+                                <th>Jenis & Pos Belanja</th>
+                                <th>Alokasi</th>
                                 <th class="text-end">Nominal</th>
                                 <th class="text-center">Aksi</th>
                             </tr>
@@ -124,50 +156,32 @@
                         <tbody>
                             {% for k in keluar %}
                             <tr>
-                                <td><small>{{ k.tanggal }}</small></td>
-                                <td><strong>{{ k.kategori }}</strong></td>
-                                <td>{{ k.keterangan }}</td>
+                                <td>{{ k.tanggal[:10] }}</td>
+                                <td>
+                                    <span class="badge {{ 'bg-primary' if k.unit=='MTs' else ('bg-info text-dark' if k.unit=='MA' else 'bg-warning text-dark') }}">
+                                        {{ k.unit }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <strong>{{ k.kategori }}</strong>
+                                    <div class="text-muted">{{ k.jenis_belanja }} {{ '(' + k.keterangan + ')' if k.keterangan else '' }}</div>
+                                </td>
+                                <td>
+                                    {% if k.unit == 'Yayasan' %}
+                                        <span class="badge bg-light text-dark border">MTs {{ k.persen_mts }}% : MA {{ k.persen_ma }}%</span>
+                                    {% else %}
+                                        <span class="text-muted">100% {{ k.unit }}</span>
+                                    {% endif %}
+                                </td>
                                 <td class="text-end text-danger fw-bold">Rp {{ "{:,.0f}".format(k.nominal).replace(',', '.') }}</td>
                                 <td class="text-center">
-                                    <!-- Tombol Edit Pengeluaran -->
-                                    <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#editKeluarModal{{ k.id }}">Edit</button>
-                                    
-                                    <!-- Tombol Hapus Pengeluaran (POST) -->
                                     <form action="/hapus/kas_keluar/{{ k.id }}" method="POST" style="display:inline;">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Yakin ingin menghapus data pengeluaran ini?')">Hapus</button>
+                                        <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" onclick="return confirm('Hapus pengeluaran ini?')">Hapus</button>
                                     </form>
                                 </td>
                             </tr>
-
-                            <!-- Modal Edit Pengeluaran -->
-                            <div class="modal fade" id="editKeluarModal{{ k.id }}" tabindex="-1" aria-labelledby="editKeluarModalLabel{{ k.id }}" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header bg-warning">
-                                            <h5 class="modal-title fw-bold" id="editKeluarModalLabel{{ k.id }}">Edit Pengeluaran</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <form action="/edit/kas_keluar/{{ k.id }}" method="POST">
-                                            <div class="modal-body">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Kategori Pengeluaran</label>
-                                                    <input type="text" name="kategori" class="form-control" value="{{ k.kategori }}" required>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Nominal (Rp)</label>
-                                                    <input type="number" name="nominal" class="form-control" value="{{ k.nominal }}" required>
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                                <button type="submit" class="btn btn-danger">Simpan Perubahan</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
                             {% else %}
-                            <tr><td colspan="5" class="text-center text-muted py-3">Belum ada pengeluaran dicatat.</td></tr>
+                            <tr><td colspan="6" class="text-center text-muted py-3">Belum ada pengeluaran dicatat.</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -177,6 +191,20 @@
     </div>
 </div>
 
-<!-- Bootstrap JS (Bundle) agar Pop-Up Modal Edit berfungsi -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function aturFormBelanja() {
+        let unit = document.getElementById('unitKeluar').value;
+        let jenisSelect = document.getElementById('jenisBelanja');
+        let boxRasio = document.getElementById('boxRasioShared');
+
+        if (unit === 'Yayasan') {
+            jenisSelect.innerHTML = '<option value="Beban Bersama">3. Beban Bersama (Listrik, Air, Satpam, dll)</option>';
+            boxRasio.style.display = 'block';
+        } else {
+            jenisSelect.innerHTML = '<option value="Operasional BOS">1. Operasional BOS (Honor Guru, ATK, Perawatan)</option>' +
+                                    '<option value="Kebutuhan Siswa">2. Kebutuhan Siswa (Belanja Seragam, Ujian)</option>';
+            boxRasio.style.display = 'none';
+        }
+    }
+</script>
 {% endblock %}

@@ -1,44 +1,52 @@
 {% extends 'base.html' %}
 
-{% block title %}Kelola Data Siswa - TU{% endblock %}
+{% block title %}Kelola Data Siswa - Keuangan ARROJA{% endblock %}
 
 {% block content %}
 <div class="row">
-    <!-- Form Tambah Siswa -->
     <div class="col-md-4 mb-4">
         <div class="card shadow-sm border-0">
-            <div class="card-header bg-primary text-white fw-bold">Tambah Data Siswa</div>
+            <div class="card-header bg-primary text-white fw-bold">Tambah Data Siswa (MTs / MA)</div>
             <div class="card-body">
                 <form action="/tu/siswa" method="POST">
-                    <div class="mb-3">
-                        <label class="form-label text-secondary">NISN (10 Digit)</label>
+                    <div class="mb-2">
+                        <label class="form-label text-secondary small fw-semibold">Jenjang Pendidikan</label>
+                        <select name="jenjang" class="form-select" required>
+                            <option value="MTs">MTs ARROJA</option>
+                            <option value="MA">MA ARROJA</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label text-secondary small fw-semibold">Kelas</label>
+                        <input type="text" name="kelas" class="form-control" placeholder="Contoh: VII-A / X-IPA 1" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label text-secondary small fw-semibold">NISN (10 Digit)</label>
                         <input type="text" name="nisn" class="form-control" placeholder="Contoh: 0012345678" pattern="\d{10}" title="Harus 10 digit angka" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label text-secondary">Nama Lengkap Siswa</label>
+                        <label class="form-label text-secondary small fw-semibold">Nama Lengkap Siswa</label>
                         <input type="text" name="nama" class="form-control" required>
                     </div>
-                    <div class="alert alert-info" style="font-size: 0.85rem;">
-                        <strong>Info:</strong> Menyimpan data ini otomatis membuat akun Wali Murid terenkripsi.<br>
-                        <strong>Username:</strong> NISN<br>
-                        <strong>Password:</strong> NISN
+                    <div class="alert alert-info py-2" style="font-size: 0.82rem;">
+                        Akun Wali Murid dibuat otomatis dengan Username & Password = <strong>NISN</strong>.
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Simpan Data & Buat Akun</button>
+                    <button type="submit" class="btn btn-primary w-100">Simpan Data Siswa</button>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Tabel Daftar Siswa -->
     <div class="col-md-8">
         <div class="card shadow-sm border-0">
             <div class="card-body">
-                <h5 class="card-title text-primary fw-bold mb-3">Daftar Siswa Aktif</h5>
+                <h5 class="card-title text-primary fw-bold mb-3">Daftar Siswa Aktif YPI ARROJA</h5>
                 <div class="table-responsive">
                     <table class="table table-bordered table-hover align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th>ID</th>
+                                <th>Jenjang</th>
+                                <th>Kelas</th>
                                 <th>NISN</th>
                                 <th>Nama Siswa</th>
                                 <th class="text-center">Aksi</th>
@@ -47,35 +55,43 @@
                         <tbody>
                             {% for s in siswa %}
                             <tr>
-                                <td>{{ s.id }}</td>
+                                <td><span class="badge {{ 'bg-primary' if s.jenjang == 'MTs' else 'bg-info text-dark' }}">{{ s.jenjang }}</span></td>
+                                <td>{{ s.kelas }}</td>
                                 <td><strong>{{ s.nisn }}</strong></td>
                                 <td>{{ s.nama }}</td>
                                 <td class="text-center">
-                                    <!-- Tombol Edit memanggil Modal -->
                                     <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ s.id }}">Edit</button>
-                                    
-                                    <!-- Tombol Hapus (POST) -->
                                     <form action="/hapus/siswa/{{ s.id }}" method="POST" style="display:inline;">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Yakin ingin menghapus siswa ini? Seluruh data tagihan dan akun login wali murid terkait juga akan dihapus.')">Hapus</button>
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus siswa beserta data tagihan & akunnya?')">Hapus</button>
                                     </form>
                                 </td>
                             </tr>
 
-                            <!-- Modal Edit Siswa -->
-                            <div class="modal fade" id="editModal{{ s.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ s.id }}" aria-hidden="true">
+                            <div class="modal fade" id="editModal{{ s.id }}" tabindex="-1" aria-hidden="true">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
                                         <div class="modal-header bg-warning">
-                                            <h5 class="modal-title fw-bold" id="editModalLabel{{ s.id }}">Edit Data Siswa</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            <h5 class="modal-title fw-bold">Edit Data Siswa</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                         </div>
                                         <form action="/edit/siswa/{{ s.id }}" method="POST">
                                             <div class="modal-body">
-                                                <div class="mb-3">
-                                                    <label class="form-label">NISN (10 Digit)</label>
-                                                    <input type="text" name="nisn" class="form-control" value="{{ s.nisn }}" pattern="\d{10}" title="Harus 10 digit angka" required>
+                                                <div class="mb-2">
+                                                    <label class="form-label">Jenjang</label>
+                                                    <select name="jenjang" class="form-select" required>
+                                                        <option value="MTs" {{ 'selected' if s.jenjang == 'MTs' }}>MTs ARROJA</option>
+                                                        <option value="MA" {{ 'selected' if s.jenjang == 'MA' }}>MA ARROJA</option>
+                                                    </select>
                                                 </div>
-                                                <div class="mb-3">
+                                                <div class="mb-2">
+                                                    <label class="form-label">Kelas</label>
+                                                    <input type="text" name="kelas" class="form-control" value="{{ s.kelas }}" required>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <label class="form-label">NISN (10 Digit)</label>
+                                                    <input type="text" name="nisn" class="form-control" value="{{ s.nisn }}" pattern="\d{10}" required>
+                                                </div>
+                                                <div class="mb-2">
                                                     <label class="form-label">Nama Siswa</label>
                                                     <input type="text" name="nama" class="form-control" value="{{ s.nama }}" required>
                                                 </div>
@@ -89,9 +105,7 @@
                                 </div>
                             </div>
                             {% else %}
-                            <tr>
-                                <td colspan="4" class="text-center text-muted py-4">Belum ada data siswa.</td>
-                            </tr>
+                            <tr><td colspan="5" class="text-center text-muted py-4">Belum ada data siswa.</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -100,7 +114,5 @@
         </div>
     </div>
 </div>
-
-<!-- Bootstrap JS (Bundle) agar Pop-Up Modal Edit berfungsi -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}

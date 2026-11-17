@@ -1,71 +1,77 @@
 {% extends 'base.html' %}
 
-{% block title %}Master Tagihan - Keuangan Sekolah{% endblock %}
+{% block title %}Master Titipan Siswa - Keuangan ARROJA{% endblock %}
 
 {% block content %}
 <div class="row">
-    <!-- Form Input Master Tagihan -->
     <div class="col-md-4 mb-4">
         <div class="card shadow-sm border-0">
-            <div class="card-header bg-primary text-white fw-bold">Buat Item Tagihan Baru</div>
+            <div class="card-header bg-primary text-white fw-bold">Buat Item Titipan Siswa</div>
             <div class="card-body">
                 <form action="/bendahara/tagihan" method="POST">
                     <div class="mb-3">
-                        <label class="form-label text-secondary">Nama Tagihan</label>
-                        <input type="text" name="nama_tagihan" class="form-control" placeholder="Contoh: SPP Juli 2026" required>
+                        <label class="form-label text-secondary">Jenjang Unit</label>
+                        <select name="jenjang" class="form-select" required>
+                            <option value="MTs">MTs ARROJA</option>
+                            <option value="MA">MA ARROJA</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-secondary">Nama Item Titipan</label>
+                        <input type="text" name="nama_tagihan" class="form-control" placeholder="Contoh: Seragam & Ujian Semester" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label text-secondary">Nominal (Rp)</label>
-                        <input type="number" name="nominal" class="form-control" placeholder="Contoh: 250000" required>
+                        <input type="number" name="nominal" class="form-control" placeholder="Contoh: 350000" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label text-secondary">Kategori</label>
+                        <label class="form-label text-secondary">Kategori Titipan</label>
                         <select name="kategori" class="form-select" required>
-                            <option value="">Pilih Kategori...</option>
-                            <option value="SPP">SPP Bulanan</option>
-                            <option value="Gedung">Uang Gedung/Pangkal</option>
-                            <option value="Seragam">Seragam</option>
-                            <option value="Lainnya">Kegiatan / Lainnya</option>
+                            <option value="Seragam">Titipan Seragam</option>
+                            <option value="Ujian">Titipan Ujian</option>
+                            <option value="Kegiatan">Kegiatan Siswa</option>
+                            <option value="Lainnya">Titipan Lainnya</option>
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Simpan Tagihan</button>
+                    <button type="submit" class="btn btn-primary w-100">Simpan Master Titipan</button>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Tabel Daftar Master Tagihan -->
     <div class="col-md-8">
         <div class="card shadow-sm border-0">
             <div class="card-body">
-                <h5 class="card-title text-success fw-bold mb-3">Katalog Master Tagihan</h5>
+                <h5 class="card-title text-primary fw-bold mb-3">Katalog Titipan Siswa (MTs & MA)</h5>
                 <div class="table-responsive">
                     <table class="table table-bordered table-hover align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th>ID</th>
-                                <th>Nama Tagihan</th>
+                                <th>Jenjang</th>
+                                <th>Nama Item Titipan</th>
                                 <th>Kategori</th>
-                                <th class="text-end">Nominal (Rp)</th>
+                                <th class="text-end">Nominal</th>
                                 <th class="text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for t in tagihan %}
                             <tr>
-                                <td>{{ t.id }}</td>
+                                <td>
+                                    <span class="badge {{ 'bg-primary' if t.jenjang == 'MTs' else 'bg-info text-dark' }}">{{ t.jenjang }}</span>
+                                </td>
                                 <td><strong>{{ t.nama_tagihan }}</strong></td>
                                 <td><span class="badge bg-secondary">{{ t.kategori }}</span></td>
                                 <td class="text-end">Rp {{ "{:,.0f}".format(t.nominal).replace(',', '.') }}</td>
                                 <td class="text-center">
                                     <form action="/hapus/tagihan/{{ t.id }}" method="POST" style="display:inline;">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Yakin ingin menghapus master tagihan ini?')">Hapus</button>
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus item titipan ini?')">Hapus</button>
                                     </form>
                                 </td>
                             </tr>
                             {% else %}
                             <tr>
-                                <td colspan="5" class="text-center text-muted py-3">Belum ada master tagihan yang dibuat.</td>
+                                <td colspan="5" class="text-center text-muted py-3">Belum ada master titipan siswa.</td>
                             </tr>
                             {% endfor %}
                         </tbody>

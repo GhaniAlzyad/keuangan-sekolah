@@ -1,107 +1,130 @@
 {% extends 'base.html' %}
 
-{% block title %}Laporan Keuangan Sekolah - Executive Cash Flow{% endblock %}
+{% block title %}Laporan Keuangan & Konsolidasi - Keuangan ARROJA{% endblock %}
 
 {% block content %}
-<!-- Header & Tombol Cetak PDF -->
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="text-primary fw-bold mb-0">Ringkasan Arus Kas Sekolah</h4>
+    <div>
+        <h4 class="text-primary fw-bold mb-0">Laporan Keuangan & Konsolidasi Yayasan</h4>
+        <small class="text-muted">Yayasan Pendidikan Islam Arroja (MTs & MA Arroja Garut)</small>
+    </div>
     <a href="/laporan/pdf" class="btn btn-danger shadow-sm">
-        <i class="bi bi-file-earmark-pdf"></i> Cetak Laporan PDF
+        <i class="bi bi-file-earmark-pdf"></i> Cetak Laporan Konsolidasi PDF
     </a>
 </div>
 
-<!-- Kartu Ringkasan Kas Executive -->
-<div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="card border-0 bg-primary text-white p-3 shadow-sm h-100">
-            <small class="opacity-75">Total Pemasukan Siswa</small>
-            <h4 class="fw-bold mb-0 mt-1">Rp {{ "{:,.0f}".format(masuk_siswa).replace(',', '.') }}</h4>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-0 bg-info text-white p-3 shadow-sm h-100">
-            <small class="opacity-75">Pemasukan Lain (BOS/Hibah)</small>
-            <h4 class="fw-bold mb-0 mt-1">Rp {{ "{:,.0f}".format(masuk_lain).replace(',', '.') }}</h4>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-0 bg-danger text-white p-3 shadow-sm h-100">
-            <small class="opacity-75">Total Pengeluaran Sekolah</small>
-            <h4 class="fw-bold mb-0 mt-1">Rp {{ "{:,.0f}".format(pengeluaran).replace(',', '.') }}</h4>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-0 bg-success text-white p-3 shadow-sm h-100">
-            <small class="opacity-75">Sisa Saldo Kas Sekolah</small>
-            <h4 class="fw-bold mb-0 mt-1">Rp {{ "{:,.0f}".format(saldo).replace(',', '.') }}</h4>
-        </div>
-    </div>
-</div>
-
-<!-- Rincian Tabel Pemasukan & Pengeluaran -->
-<div class="row">
-    <!-- Tabel Pengeluaran -->
-    <div class="col-md-6 mb-4">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-danger text-white fw-bold">Rincian Pengeluaran Sekolah</div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Kategori</th>
-                                <th>Keterangan</th>
-                                <th class="text-end">Nominal</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for k in rincian_keluar %}
-                            <tr>
-                                <td><strong>{{ k.kategori }}</strong></td>
-                                <td>{{ k.keterangan or '-' }}</td>
-                                <td class="text-end text-danger fw-semibold">Rp {{ "{:,.0f}".format(k.nominal).replace(',', '.') }}</td>
-                            </tr>
-                            {% else %}
-                            <tr>
-                                <td colspan="3" class="text-center text-muted py-4">Belum ada data pengeluaran.</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+<!-- 1. LAPORAN JENJANG MTs & MA BERDAMPINGAN -->
+<div class="row g-4 mb-4">
+    <!-- BLOK LAPORAN MTs -->
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-primary text-white fw-bold">
+                1. LAPORAN KEUANGAN JENJANG MTs ARROJA
+            </div>
+            <div class="card-body">
+                <table class="table table-sm table-bordered mb-0">
+                    <tbody>
+                        <tr class="table-light"><th colspan="2">A. Realisasi Pemasukan Unit MTs</th></tr>
+                        <tr>
+                            <td>Realisasi Dana BOS MTs</td>
+                            <td class="text-end text-success fw-semibold">Rp {{ "{:,.0f}".format(keuangan.bos_mts).replace(',', '.') }}</td>
+                        </tr>
+                        <tr>
+                            <td>Realisasi Titipan Siswa MTs (Lunas)</td>
+                            <td class="text-end text-success fw-semibold">Rp {{ "{:,.0f}".format(keuangan.titipan_mts).replace(',', '.') }}</td>
+                        </tr>
+                        <tr class="table-light"><th colspan="2">B. Realisasi Pengeluaran Unit MTs</th></tr>
+                        <tr>
+                            <td>1. Operasional BOS (Honor Guru, ATK, Kelas)</td>
+                            <td class="text-end text-danger">- Rp {{ "{:,.0f}".format(keuangan.belanja_bos_mts).replace(',', '.') }}</td>
+                        </tr>
+                        <tr>
+                            <td>2. Kebutuhan Siswa (Seragam, Ujian)</td>
+                            <td class="text-end text-danger">- Rp {{ "{:,.0f}".format(keuangan.belanja_siswa_mts).replace(',', '.') }}</td>
+                        </tr>
+                        <tr class="table-primary">
+                            <th class="fw-bold">SISA SALDO KAS UNIT MTs</th>
+                            <th class="text-end fw-bold">Rp {{ "{:,.0f}".format(keuangan.saldo_kas_mts).replace(',', '.') }}</th>
+                        </tr>
+                        <tr>
+                            <td class="text-muted small"><em>Info: Porsi Beban Bersama Yayasan (Listrik/Air/Satpam)</em></td>
+                            <td class="text-end text-muted small"><em>Rp {{ "{:,.0f}".format(keuangan.beban_bersama_mts).replace(',', '.') }}</em></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- Tabel Pemasukan Non-Siswa -->
-    <div class="col-md-6 mb-4">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-info text-white fw-bold">Rincian Pemasukan Non-Siswa</div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Sumber</th>
-                                <th>Keterangan</th>
-                                <th class="text-end">Nominal</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for m in rincian_masuk %}
-                            <tr>
-                                <td><strong>{{ m.sumber }}</strong></td>
-                                <td>{{ m.keterangan or '-' }}</td>
-                                <td class="text-end text-info fw-semibold">Rp {{ "{:,.0f}".format(m.nominal).replace(',', '.') }}</td>
-                            </tr>
-                            {% else %}
-                            <tr>
-                                <td colspan="3" class="text-center text-muted py-4">Belum ada data pemasukan lain.</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+    <!-- BLOK LAPORAN MA -->
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-info text-dark fw-bold">
+                2. LAPORAN KEUANGAN JENJANG MA ARROJA
+            </div>
+            <div class="card-body">
+                <table class="table table-sm table-bordered mb-0">
+                    <tbody>
+                        <tr class="table-light"><th colspan="2">A. Realisasi Pemasukan Unit MA</th></tr>
+                        <tr>
+                            <td>Realisasi Dana BOS MA</td>
+                            <td class="text-end text-success fw-semibold">Rp {{ "{:,.0f}".format(keuangan.bos_ma).replace(',', '.') }}</td>
+                        </tr>
+                        <tr>
+                            <td>Realisasi Titipan Siswa MA (Lunas)</td>
+                            <td class="text-end text-success fw-semibold">Rp {{ "{:,.0f}".format(keuangan.titipan_ma).replace(',', '.') }}</td>
+                        </tr>
+                        <tr class="table-light"><th colspan="2">B. Realisasi Pengeluaran Unit MA</th></tr>
+                        <tr>
+                            <td>1. Operasional BOS (Honor Guru, ATK, Kelas)</td>
+                            <td class="text-end text-danger">- Rp {{ "{:,.0f}".format(keuangan.belanja_bos_ma).replace(',', '.') }}</td>
+                        </tr>
+                        <tr>
+                            <td>2. Kebutuhan Siswa (Seragam, Ujian)</td>
+                            <td class="text-end text-danger">- Rp {{ "{:,.0f}".format(keuangan.belanja_siswa_ma).replace(',', '.') }}</td>
+                        </tr>
+                        <tr class="table-info">
+                            <th class="fw-bold">SISA SALDO KAS UNIT MA</th>
+                            <th class="text-end fw-bold">Rp {{ "{:,.0f}".format(keuangan.saldo_kas_ma).replace(',', '.') }}</th>
+                        </tr>
+                        <tr>
+                            <td class="text-muted small"><em>Info: Porsi Beban Bersama Yayasan (Listrik/Air/Satpam)</em></td>
+                            <td class="text-end text-muted small"><em>Rp {{ "{:,.0f}".format(keuangan.beban_bersama_ma).replace(',', '.') }}</em></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 2. LAPORAN KONSOLIDASI YAYASAN -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-dark text-white fw-bold">
+        3. LAPORAN KONSOLIDASI YAYASAN (GABUNGAN MTs + MA + KAS INDUK YAYASAN)
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="p-3 border rounded bg-light h-100">
+                    <div class="small text-muted">Kas Induk / Shared Cost Yayasan</div>
+                    <div class="mt-2 small">Pemasukan Subsidi/Donasi: <strong class="text-success">Rp {{ "{:,.0f}".format(keuangan.kas_masuk_yayasan).replace(',', '.') }}</strong></div>
+                    <div class="small">Belanja Beban Bersama: <strong class="text-danger">- Rp {{ "{:,.0f}".format(keuangan.total_shared_yayasan).replace(',', '.') }}</strong></div>
+                    <hr class="my-2">
+                    <div>Sisa Kas Yayasan: <strong>Rp {{ "{:,.0f}".format(keuangan.saldo_kas_yayasan).replace(',', '.') }}</strong></div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3 border rounded bg-light h-100">
+                    <div class="small text-muted">Arus Kas Gabungan Seluruh Unit</div>
+                    <div class="mt-2 small">Total Pemasukan Konsolidasi: <strong class="text-success">Rp {{ "{:,.0f}".format(keuangan.total_pemasukan_konsolidasi).replace(',', '.') }}</strong></div>
+                    <div class="small">Total Pengeluaran Konsolidasi: <strong class="text-danger">- Rp {{ "{:,.0f}".format(keuangan.total_pengeluaran_konsolidasi).replace(',', '.') }}</strong></div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3 rounded bg-success text-white h-100 d-flex flex-column justify-content-center">
+                    <div class="small opacity-75">SALDO AKHIR KONSOLIDASI YAYASAN</div>
+                    <h3 class="fw-bold mb-0 mt-1">Rp {{ "{:,.0f}".format(keuangan.saldo_konsolidasi).replace(',', '.') }}</h3>
                 </div>
             </div>
         </div>
