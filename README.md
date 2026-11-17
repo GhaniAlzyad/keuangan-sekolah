@@ -93,11 +93,5 @@ Catatan untuk Akun Wali Murid: Akun wali murid dibuat secara otomatis saat Staff
 
 ---
 
-### Langkah Terakhir Sebelum Deploy:
-1. Simpan kode di atas ke dalam `README.md`.
-2. Pastikan file `requirements.txt` sudah dibuat dan gambar `qris_sekolah.png` sudah berada di dalam folder `static/`.
-3. Jalankan `git add .`, `git commit -m "Update dokumentasi dan kesiapan deploy Keuangan ARROJA"`, lalu `git push`.
-4. Lanjutkan tarik kode tersebut di **Bash Console PythonAnywhere** dan ikuti langkah konfigurasi WSGI yang sudah dibahas sebelumnya.
-
-## 💻Pengembang
+### 💻Pengembang
 Sistem ini dikembangkan Oleh Ghani Al-Zyad Mahasiswa Prodi Sistem Informasi Fakultas Ilmu Komputer Institut Teknologi Garut untuk Yayasan Pendidikan Islam ARROJA
